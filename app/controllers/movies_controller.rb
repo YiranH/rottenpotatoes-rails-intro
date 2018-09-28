@@ -12,34 +12,41 @@ class MoviesController < ApplicationController
 
   def index
     
+    @sort = params[:sort]
+    @ratings = params[:ratings]
     # sort by title or release date
-    if params[:sort] == 'title'
-      @movies = Movie.order('title')
+    if @sort == 'title'
       @title_header = 'hilite'
-    elsif params[:sort] == 'release_date'
-      @movies = Movie.order('release_date')
+    elsif @sort == 'release_date'
       @release_date_header = 'hilite'
     end
-    
+    # map user's rating choice to 1 
     @all_ratings = Movie.all_ratings
-    #set up sessions
-    if not session[:ratings]
-      session[:ratings] = @all_ratings
-    elsif not session[:sort]
-      session[:sort]= @sort
-    end 
-    #remember the settings
-    if params[:ratings] 
-      session[:ratings] = params[:ratings].keys
-    elsif params[:sort]
-      session[:sort] = params[:sort]
-    elsif params[:ratings] = nil or params[:sort] = nil
-      redirect_to movies_path(:ratings => Hash(session[:ratings].map {|x| [x,1]}), :sort => session[:sort])
-    end 
+    @ratings ||= Hash[@all_ratings.map {|x| [x, 1]}]
+    # sort and filter
+    @movies = Movie.order(@sort).where(rating: @ratings.keys)
     
-    @ratings = session[:ratings]
-    @sort = session[:sort]
-    @movies = Movie.order(@sort).where(rating: @ratings)
+
+    
+    # @all_ratings = Movie.all_ratings
+    # #set up sessions
+    # if not session[:ratings]
+    #   session[:ratings] = @all_ratings
+    # elsif not session[:sort]
+    #   session[:sort]= @sort
+    # end 
+    # #remember the settings
+    # if params[:ratings] 
+    #   session[:ratings] = params[:ratings].keys
+    # elsif params[:sort]
+    #   session[:sort] = params[:sort]
+    # elsif params[:ratings] = nil or params[:sort] = nil
+    #   redirect_to movies_path(:ratings => Hash(session[:ratings].map {|x| [x,1]}), :sort => session[:sort])
+    # end 
+    
+    # @ratings = session[:ratings]
+    # @sort = session[:sort]
+    # @movies = Movie.order(@sort).where(rating: @ratings.keys)
     
   end
 
